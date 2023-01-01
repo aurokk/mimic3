@@ -106,6 +106,6 @@ RUN export expected_sample="tests/apope_sample_${TARGETARCH}${TARGETVARIANT}.wav
 
 USER mimic3
 
-EXPOSE 59125
+EXPOSE 80
 
-ENTRYPOINT ["/home/mimic3/app/.venv/bin/python3", "-m", "mimic3_http"]
+ENTRYPOINT ["/home/mimic3/app/.venv/bin/python3", "-m", "mimic3_http", "--port", "80"]

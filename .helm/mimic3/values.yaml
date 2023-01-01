@@ -13,7 +13,7 @@ imagePullSecrets:
   - name: ghcr-aurokk
 
 nameOverride: ""
-fullnameOverride: ""
+fullnameOverride: "words-mimic3"
 
 serviceAccount:
   # Specifies whether a service account should be created
