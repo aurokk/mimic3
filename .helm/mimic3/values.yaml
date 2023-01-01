@@ -39,8 +39,7 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80
-  targetPort: 59125
+  port: 59125
 
 ingress:
   enabled: false
