@@ -126,33 +126,33 @@ def get_app(args: argparse.Namespace, request_queue: Queue, temp_dir: str):
 
     # -----------------------------------------------------------------------------
 
-    # _CSS_DIR = _DIR / "css"
-    # _IMG_DIR = _DIR / "img"
+    _CSS_DIR = _DIR / "css"
+    _IMG_DIR = _DIR / "img"
 
     def _to_bool(s: str) -> bool:
         return s.strip().lower() in {"true", "1", "yes", "on"}
 
-    # @app.route("/img/<path:filename>", methods=["GET"])
-    # async def img(filename) -> Response:
-    #     """Image static endpoint."""
-    #     return await send_from_directory(_IMG_DIR, filename)
+    @app.route("/img/<path:filename>", methods=["GET"])
+    async def img(filename) -> Response:
+        """Image static endpoint."""
+        return await send_from_directory(_IMG_DIR, filename)
 
-    # @app.route("/css/<path:filename>", methods=["GET"])
-    # async def css(filename) -> Response:
-    #     """CSS static endpoint."""
-    #     return await send_from_directory(_CSS_DIR, filename)
+    @app.route("/css/<path:filename>", methods=["GET"])
+    async def css(filename) -> Response:
+        """CSS static endpoint."""
+        return await send_from_directory(_CSS_DIR, filename)
 
     show_openapi = True
 
-    # @app.route("/")
-    # async def app_index():
-    #     """Main page."""
-    #     return await render_template(
-    #         "index.html",
-    #         show_openapi=show_openapi,
-    #         max_text_length=args.max_text_length,
-    #         default_voice=args.default_voice,
-    #     )
+    @app.route("/")
+    async def app_index():
+        """Main page."""
+        return await render_template(
+            "index.html",
+            show_openapi=show_openapi,
+            max_text_length=args.max_text_length,
+            default_voice=args.default_voice,
+        )
 
     @app.route("/api/tts", methods=["GET", "POST"])
     async def app_tts() -> typing.Union[Response, str]:
@@ -221,8 +221,8 @@ def get_app(args: argparse.Namespace, request_queue: Queue, temp_dir: str):
             return Response(wav_bytes, mimetype="audio/wav")
 
         # Play audio on server
-        # play_cmd = shlex.split(args.play_program)
-        # subprocess.run(play_cmd, input=wav_bytes, check=True)
+        play_cmd = shlex.split(args.play_program)
+        subprocess.run(play_cmd, input=wav_bytes, check=True)
 
         return "OK"
 
@@ -263,68 +263,68 @@ def get_app(args: argparse.Namespace, request_queue: Queue, temp_dir: str):
 
         return jsonify(voice_dicts)
 
-    # @app.route("/process", methods=["GET", "POST"])
-    # async def api_marytts_process():
-    #     """MaryTTS-compatible /process endpoint"""
-    #     voice = args.voice
+    @app.route("/process", methods=["GET", "POST"])
+    async def api_marytts_process():
+        """MaryTTS-compatible /process endpoint"""
+        voice = args.voice
 
-    #     if request.method == "POST":
-    #         data = parse_qs((await request.data).decode())
-    #         text = data.get("INPUT_TEXT", [""])[0]
+        if request.method == "POST":
+            data = parse_qs((await request.data).decode())
+            text = data.get("INPUT_TEXT", [""])[0]
 
-    #         if "VOICE" in data:
-    #             voice = str(data.get("VOICE", [voice])[0]).strip()
-    #     else:
-    #         text = request.args.get("INPUT_TEXT", "")
-    #         voice = str(request.args.get("VOICE", voice)).strip()
+            if "VOICE" in data:
+                voice = str(data.get("VOICE", [voice])[0]).strip()
+        else:
+            text = request.args.get("INPUT_TEXT", "")
+            voice = str(request.args.get("VOICE", voice)).strip()
 
-    #     if args.max_text_length is not None:
-    #         text = text[: args.max_text_length]
+        if args.max_text_length is not None:
+            text = text[: args.max_text_length]
 
-    #     voice = voice or args.voice or DEFAULT_VOICE
+        voice = voice or args.voice or DEFAULT_VOICE
 
-    #     # Assume SSML if text begins with an angle bracket
-    #     ssml = text.strip().startswith("<")
+        # Assume SSML if text begins with an angle bracket
+        ssml = text.strip().startswith("<")
 
-    #     _LOGGER.debug("Speaking with voice '%s': %s", voice, text)
-    #     wav_bytes = await text_to_wav(
-    #         TextToWavParams(
-    #             text=text,
-    #             voice=voice,
-    #             ssml=ssml,
-    #             length_scale=args.length_scale,
-    #             noise_scale=args.noise_scale,
-    #             noise_w=args.noise_w,
-    #         )
-    #     )
+        _LOGGER.debug("Speaking with voice '%s': %s", voice, text)
+        wav_bytes = await text_to_wav(
+            TextToWavParams(
+                text=text,
+                voice=voice,
+                ssml=ssml,
+                length_scale=args.length_scale,
+                noise_scale=args.noise_scale,
+                noise_w=args.noise_w,
+            )
+        )
 
-    #     return Response(wav_bytes, mimetype="audio/wav")
+        return Response(wav_bytes, mimetype="audio/wav")
 
-    # @app.route("/voices", methods=["GET"])
-    # async def api_marytts_voices():
-    #     """MaryTTS-compatible /voices endpoint"""
-    #     voices_by_key = {v.key: v for v in _MIMIC3.get_voices()}
-    #     sorted_voices = sorted(voices_by_key.values(), key=lambda v: v.key)
+    @app.route("/voices", methods=["GET"])
+    async def api_marytts_voices():
+        """MaryTTS-compatible /voices endpoint"""
+        voices_by_key = {v.key: v for v in _MIMIC3.get_voices()}
+        sorted_voices = sorted(voices_by_key.values(), key=lambda v: v.key)
 
-    #     # [voice] [language] [gender] [tech=hmm]
-    #     lines = []
-    #     gender = "NA"  # don't have this information for every speaker yet
-    #     tech = "vits"
+        # [voice] [language] [gender] [tech=hmm]
+        lines = []
+        gender = "NA"  # don't have this information for every speaker yet
+        tech = "vits"
 
-    #     for voice in sorted_voices:
-    #         if not is_voice_downloaded(voice.location):
-    #             # Skip voices that are not yet installed
-    #             continue
-    #         if voice.is_multispeaker:
-    #             # List each speaker separately
-    #             for speaker in voice.speakers:
-    #                 lines.append(
-    #                     f"{voice.key}#{speaker} {voice.language} {gender} {tech}"
-    #                 )
-    #         else:
-    #             lines.append(f"{voice.key} {voice.language} {gender} {tech}")
+        for voice in sorted_voices:
+            if not is_voice_downloaded(voice.location):
+                # Skip voices that are not yet installed
+                continue
+            if voice.is_multispeaker:
+                # List each speaker separately
+                for speaker in voice.speakers:
+                    lines.append(
+                        f"{voice.key}#{speaker} {voice.language} {gender} {tech}"
+                    )
+            else:
+                lines.append(f"{voice.key} {voice.language} {gender} {tech}")
 
-    #     return "\n".join(lines)
+        return "\n".join(lines)
 
     @app.route("/api/healthcheck", methods=["GET"])
     async def api_healthcheck():
